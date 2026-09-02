@@ -56,7 +56,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, i
   return null;
 };
 
-export const VisibilityTrendChart: React.FC<VisibilityTrendChartProps> = ({
+const VisibilityTrendChartView: React.FC<VisibilityTrendChartProps> = ({
   data = [],
   loading = false,
 }) => {
@@ -292,3 +292,5 @@ export const VisibilityTrendChart: React.FC<VisibilityTrendChartProps> = ({
     </Card>
   );
 };
+
+export const VisibilityTrendChart = React.memo(VisibilityTrendChartView);
