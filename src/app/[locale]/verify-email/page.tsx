@@ -17,6 +17,7 @@ export default function VerifyEmailPage({ params }: { params: Promise<{ locale: 
   const router = useRouter();
   const searchParams = useSearchParams();
   const emailParam = searchParams?.get("email") || "";
+  const nextParam = searchParams?.get("next");
 
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState("");
@@ -77,7 +78,8 @@ export default function VerifyEmailPage({ params }: { params: Promise<{ locale: 
 
       setIsSuccess(true);
       setTimeout(() => {
-        router.push(`/${locale}/dashboard`);
+        const safeNext = nextParam && nextParam.startsWith(`/${locale}/`) ? nextParam : `/${locale}/dashboard`;
+        router.push(safeNext);
       }, 1500);
     } catch (err: unknown) {
       setSubmitError(isFa ? "کد تایید نامعتبر یا منقضی شده است." : "The verification code is invalid or has expired.");
