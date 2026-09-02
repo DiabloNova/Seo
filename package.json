@@ -54,7 +54,7 @@
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
     "typescript": "^5.9.3",
-    "@playwright/test": "^1.52.0"
+    "@playwright/test": "^1.58.2"
   },
   "packageManager": "pnpm@9.15.9",
   "pnpm": {
