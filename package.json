@@ -12,8 +12,7 @@
     "db:migrate": "tsx src/core/database/migrator.ts",
     "db:push": "tsx scripts/database/db-push-guard.ts && drizzle-kit push",
     "test:all": "tsx scripts/test-all.ts",
-    "perf:baseline": "node scripts/measure-route-budgets.mjs --write-baseline",
-    "perf:check": "node scripts/measure-route-budgets.mjs"
+    "test:visual": "playwright test"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.24",
@@ -54,7 +53,8 @@
     "pg": "^8.22.0",
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@playwright/test": "^1.52.0"
   },
   "packageManager": "pnpm@9.15.9",
   "pnpm": {
