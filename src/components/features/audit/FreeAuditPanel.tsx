@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useId } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/components/AuthProvider";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/Card";
@@ -66,6 +66,15 @@ export const FreeAuditPanel: React.FC<FreeAuditPanelProps> = ({ onUpgradeClick }
 
   const consoleEndRef = useRef<HTMLDivElement | null>(null);
 
+  // Accessibility: focus targets for validation failure / successful
+  // completion, and stable ids for associating errors with their fields.
+  const urlInputRef = useRef<HTMLInputElement | null>(null);
+  const resultHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const urlInputId = useId();
+  const urlErrorId = `${urlInputId}-error`;
+  const authErrorId = useId();
+  const [statusMessage, setStatusMessage] = useState("");
+
   // Auto-scroll the terminal logs
   useEffect(() => {
     if (consoleEndRef.current) {
@@ -79,6 +88,35 @@ export const FreeAuditPanel: React.FC<FreeAuditPanelProps> = ({ onUpgradeClick }
       runAudit();
     }
   }, [session.status]);
+
+  // Accessible status announcements + focus management for asynchronous
+  // submission states. Scoped to auditState.status/.error only, so
+  // unrelated re-renders (e.g. streaming log lines while processing)
+  // never re-trigger an announcement or move focus again.
+  useEffect(() => {
+    if (auditState.status === "processing") {
+      setStatusMessage(
+        isRtl ? "در حال تحلیل وب‌سایت شما. لطفاً منتظر بمانید." : "Analyzing your website. Please wait."
+      );
+    } else if (auditState.status === "completed") {
+      setStatusMessage(
+        isRtl ? "تحلیل با موفقیت انجام شد. نتایج در ادامه نمایش داده می‌شود." : "Analysis complete. Results are ready below."
+      );
+      resultHeadingRef.current?.focus();
+    } else if (auditState.status === "error") {
+      setStatusMessage(auditState.error || (isRtl ? "خطایی رخ داد." : "An error occurred."));
+    } else {
+      setStatusMessage("");
+    }
+  }, [auditState.status, auditState.error, isRtl]);
+
+  // Authentication is a separate async step inside the same funnel; give it
+  // its own polite status without touching the audit-status effect above.
+  useEffect(() => {
+    setStatusMessage(
+      isAuthLoading ? (isRtl ? "در حال تایید هویت. لطفاً منتظر بمانید." : "Authenticating. Please wait.") : ""
+    );
+  }, [isAuthLoading, isRtl]);
 
   const strings = {
     title: isRtl ? "موتور بهینه‌سازی و تحلیل رایگان برند" : "Free AI Visibility Ingestion Funnel",
@@ -145,6 +183,9 @@ export const FreeAuditPanel: React.FC<FreeAuditPanelProps> = ({ onUpgradeClick }
     if (!isValid) {
       setUrlError(strings.invalidUrl);
       setAuditState((prev) => ({ ...prev, status: "invalid-url" }));
+      if (document.activeElement !== urlInputRef.current) {
+        urlInputRef.current?.focus();
+      }
       return;
     }
 
@@ -248,6 +289,14 @@ export const FreeAuditPanel: React.FC<FreeAuditPanelProps> = ({ onUpgradeClick }
 
   return (
     <div className="w-full space-y-6" dir={direction}>
+      {/* Shared screen-reader-only status channel for async submission
+          states (processing / completed / error / authenticating). Kept
+          permanently mounted so content updates, not remounts, drive
+          announcements -- this avoids duplicate or missed reads. */}
+      <div aria-live="polite" role="status" className="sr-only">
+        {statusMessage}
+      </div>
+
 
       {/* 1. INPUT / IDLE STATE or INVALID URL STATE */}
       {(auditState.status === "idle" || auditState.status === "invalid-url") && (
@@ -266,12 +315,19 @@ export const FreeAuditPanel: React.FC<FreeAuditPanelProps> = ({ onUpgradeClick }
           <CardContent>
             <form onSubmit={handleUrlSubmit} className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Globe size={16} className={`absolute top-1/2 -translate-y-1/2 text-[var(--text-muted)] ${isRtl ? "right-4" : "left-4"}`} />
+                <label htmlFor={urlInputId} className="sr-only">
+                  {strings.placeholder}
+                </label>
+                <Globe size={16} aria-hidden="true" className={`absolute top-1/2 -translate-y-1/2 text-[var(--text-muted)] ${isRtl ? "right-4" : "left-4"}`} />
                 <input
+                  ref={urlInputRef}
+                  id={urlInputId}
                   type="text"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder={strings.placeholder}
+                  aria-invalid={!!urlError}
+                  aria-describedby={urlError ? urlErrorId : undefined}
                   className={`
                     w-full py-3.5 text-xs rounded-xl outline-none transition-all duration-300
                     bg-[var(--muted-surface)] text-[var(--text-primary)] border border-[var(--border)]
@@ -293,8 +349,12 @@ export const FreeAuditPanel: React.FC<FreeAuditPanelProps> = ({ onUpgradeClick }
             </form>
 
             {urlError && (
-              <div className="p-4 mt-4 rounded-xl border border-[var(--color-error)]/25 bg-[var(--color-error)]/10 text-[var(--color-error)] text-xs flex items-start gap-2.5 animate-shake">
-                <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
+              <div
+                id={urlErrorId}
+                role="alert"
+                className="p-4 mt-4 rounded-xl border border-[var(--color-error)]/25 bg-[var(--color-error)]/10 text-[var(--color-error)] text-xs flex items-start gap-2.5 animate-shake"
+              >
+                <AlertCircle size={15} className="flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <p className="leading-relaxed font-bold">{urlError}</p>
               </div>
             )}
@@ -320,26 +380,32 @@ export const FreeAuditPanel: React.FC<FreeAuditPanelProps> = ({ onUpgradeClick }
             <div className="flex border border-[var(--border)] bg-[var(--muted-surface)] p-1 rounded-xl mb-6">
               <button
                 type="button"
+                aria-pressed={authTab === "register"}
                 onClick={() => { setAuthTab("register"); setAuthError(null); }}
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${authTab === "register" ? "bg-slate-900 text-white shadow-sm border border-white/5" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
               >
-                <UserPlus size={13} className="inline mr-1.5 shrink-0" />
+                <UserPlus size={13} aria-hidden="true" className="inline mr-1.5 shrink-0" />
                 <span>{strings.registerTab}</span>
               </button>
               <button
                 type="button"
+                aria-pressed={authTab === "login"}
                 onClick={() => { setAuthTab("login"); setAuthError(null); }}
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${authTab === "login" ? "bg-slate-900 text-white shadow-sm border border-white/5" : "text-[var(--text-muted)] hover:text-[var(--text-primary)]"}`}
               >
-                <LogIn size={13} className="inline mr-1.5 shrink-0" />
+                <LogIn size={13} aria-hidden="true" className="inline mr-1.5 shrink-0" />
                 <span>{strings.loginTab}</span>
               </button>
             </div>
 
             <form onSubmit={handleInlineAuth} className="space-y-4">
               {authError && (
-                <div className="p-3.5 rounded-xl border border-[var(--color-error)]/20 bg-[var(--color-error)]/10 text-[var(--color-error)] text-xs flex items-center gap-2">
-                  <AlertCircle size={14} className="shrink-0" />
+                <div
+                  id={authErrorId}
+                  role="alert"
+                  className="p-3.5 rounded-xl border border-[var(--color-error)]/20 bg-[var(--color-error)]/10 text-[var(--color-error)] text-xs flex items-center gap-2"
+                >
+                  <AlertCircle size={14} className="shrink-0" aria-hidden="true" />
                   <p className="font-bold">{authError}</p>
                 </div>
               )}
@@ -451,7 +517,13 @@ export const FreeAuditPanel: React.FC<FreeAuditPanelProps> = ({ onUpgradeClick }
               </div>
               <div className="text-start">
                 <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">{isRtl ? "آدرس وب‌سایت اسکن شده" : "AUDITED TARGET DOMAIN"}</span>
-                <h2 className="text-base font-black text-[var(--text-primary)] font-display mt-0.5">{auditState.job.url}</h2>
+                <h2
+                  ref={resultHeadingRef}
+                  tabIndex={-1}
+                  className="text-base font-black text-[var(--text-primary)] font-display mt-0.5 outline-none focus:outline focus:outline-[3px] focus:outline-[var(--focus-ring)] focus:outline-offset-[3px] rounded-md"
+                >
+                  {auditState.job.url}
+                </h2>
               </div>
             </div>
 
