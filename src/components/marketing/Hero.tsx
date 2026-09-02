@@ -52,21 +52,15 @@ export function Hero() {
           </span>
 
           <h1 className="hero-title headline-reveal font-black tracking-tight text-balance text-5xl sm:text-6xl md:text-7xl leading-[1.15]">
-            <span className="title-accent-blue">
-              {isFa ? "دیده‌شدن برندتان را در " : "Understand your brand visibility across "}
-            </span>
-            <span className="title-accent-orange block mt-2">
-              {isFa ? "جست‌وجوی مولد و پاسخ‌های هوشمند" : "generative search and AI answers"}
-            </span>
-            <span className="text-[var(--text-primary)]">
-              {isFa ? " بهتر بشناسید و بهینه کنید" : " and turn evidence into action"}
+            <span className="hero-title-line title-accent-blue">
+              {isFa ? "هر پرسش = یک فرصت" : "Every question is an opportunity"}
             </span>
           </h1>
 
-          <p className="text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto text-pretty">
+          <p className="hero-support hero-support-reveal text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed max-w-3xl mx-auto text-pretty">
             {isFa
-              ? "سئورچبل به تیم‌های سئو و بازاریابی کمک می‌کند حضور برند، منابع ارجاع و شکاف‌های محتوایی خود را در جست‌وجوی سنتی و مولد بررسی کنند."
-              : "Seorchable helps SEO and marketing teams inspect brand presence, cited sources, and content gaps across traditional and generative search."}
+              ? "ابزارهای سئو، معرفی برند شما توسط هوش مصنوعی و بررسی شاخص های برند شما در پاسخ های تولید شده توسط هوش مصنوعی"
+              : "SEO tools, AI-powered brand discovery, and clear visibility into how your brand appears in generated answers."}
           </p>
 
           <div className="flex flex-wrap gap-3 justify-center">
@@ -86,7 +80,7 @@ export function Hero() {
         </div>
 
         {/* Dashboard Showcase Video/Slideshow Placeholder */}
-        <div className="w-full max-w-5xl mx-auto mb-16 relative perspective-1000">
+        <div className="w-full max-w-5xl mx-auto mb-16 relative perspective-1000 hero-showcase-reveal">
           <div className="relative rounded-2xl overflow-hidden border border-[var(--glass-border)] bg-[var(--glass-bg)] shadow-2xl shadow-sky-900/20 aspect-video group">
             {/* Top Bar (Mockup window controls) */}
             <div className="absolute top-0 inset-x-0 h-8 bg-[var(--muted-surface)] border-b border-[var(--glass-border)] flex items-center px-4 gap-2 z-10">
@@ -98,15 +92,55 @@ export function Hero() {
               </div>
             </div>
 
-            {/* Main Content Area Placeholder */}
-            <div className="absolute inset-0 pt-8 bg-gradient-to-br from-slate-900/40 to-slate-800/40 flex items-center justify-center">
-              <div className="flex flex-col items-center gap-4 text-[var(--text-muted)] opacity-70 group-hover:opacity-100 transition-opacity" aria-label={isFa ? "پیش‌نمایش ایستا از محیط محصول" : "Static product workspace preview"}>
-                <div className="w-16 h-16 rounded-full bg-[var(--color-primary-600)]/20 flex items-center justify-center" aria-hidden="true">
-                  <div className="w-0 h-0 border-t-8 border-t-transparent border-l-[12px] border-l-[var(--color-primary-600)] border-b-8 border-b-transparent ml-1 rtl:mr-1 rtl:ml-0 rtl:border-l-0 rtl:border-r-[12px] rtl:border-r-[var(--color-primary-600)]" />
+            {/* Product dashboard preview built from existing UI language, so the hero
+                communicates the product without inventing an external media asset. */}
+            <div
+              className="absolute inset-0 pt-8 bg-[#0b1220] text-slate-100"
+              aria-label={isFa ? "پیش‌نمایش داشبورد اصلی سئورچبل" : "Seorchable main dashboard preview"}
+            >
+              <div className="h-full grid grid-cols-[84px_1fr] sm:grid-cols-[148px_1fr]">
+                <aside className="border-e border-white/10 bg-[#0f172a] p-3 sm:p-4 space-y-5" aria-hidden="true">
+                  <div className="h-7 w-7 rounded-lg bg-[#38bdf8]/20 border border-[#38bdf8]/30" />
+                  <div className="space-y-3">
+                    {["w-full", "w-4/5", "w-full", "w-3/5", "w-4/5"].map((width, index) => (
+                      <div key={index} className={`h-2 rounded-full ${index === 0 ? "bg-[#38bdf8]/80" : "bg-slate-700/80"} ${width}`} />
+                    ))}
+                  </div>
+                </aside>
+                <div className="min-w-0 p-4 sm:p-7 space-y-5 sm:space-y-7">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="h-2 w-24 sm:w-32 rounded-full bg-slate-600" />
+                      <div className="h-4 w-36 sm:w-56 rounded-full bg-slate-200/90" />
+                    </div>
+                    <div className="hidden sm:block h-7 w-20 rounded-md border border-white/10 bg-white/5" />
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                    {["84%", "72%", "91%", "64%"].map((value, index) => (
+                      <div key={value} className="rounded-xl border border-white/10 bg-white/[0.035] p-2.5 sm:p-4 space-y-2">
+                        <div className="h-2 w-3/4 rounded-full bg-slate-600" />
+                        <div className="text-sm sm:text-xl font-black text-slate-100">{value}</div>
+                        <div className={`h-1.5 w-1/2 rounded-full ${index % 2 ? "bg-[#f97316]/70" : "bg-[#38bdf8]/70"}`} />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid lg:grid-cols-[1.5fr_1fr] gap-4 min-h-0">
+                    <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3 sm:p-5 space-y-4">
+                      <div className="flex justify-between"><div className="h-2 w-28 rounded-full bg-slate-500" /><div className="h-2 w-12 rounded-full bg-[#38bdf8]/70" /></div>
+                      <svg viewBox="0 0 600 180" className="w-full h-28 sm:h-40" role="img" aria-label={isFa ? "نمودار روند دیده‌شدن برند" : "Brand visibility trend chart"}>
+                        <path d="M0 145 C70 132 90 95 150 112 S245 135 300 85 S380 105 435 60 S520 78 600 28" fill="none" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
+                        <path d="M0 145 C70 132 90 95 150 112 S245 135 300 85 S380 105 435 60 S520 78 600 28 V180 H0Z" fill="#38bdf8" fillOpacity=".08" />
+                        <line x1="0" y1="170" x2="600" y2="170" stroke="#334155" strokeWidth="2" />
+                      </svg>
+                    </div>
+                    <div className="hidden sm:block rounded-xl border border-white/10 bg-white/[0.035] p-5 space-y-4">
+                      <div className="h-2 w-28 rounded-full bg-slate-500" />
+                      {["AI visibility", "Citations", "Authority"].map((label, index) => (
+                        <div key={label} className="space-y-2"><div className="flex justify-between text-[10px] text-slate-400"><span>{label}</span><span>{index + 7}{index}%</span></div><div className="h-2 rounded-full bg-slate-700"><div className="h-full rounded-full bg-[#f97316]/80" style={{ width: `${72 - index * 12}%` }} /></div></div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <p className="text-sm font-semibold tracking-widest uppercase">
-                  {isFa ? "پیش‌نمایش ایستا از محیط محصول" : "Static product workspace preview"}
-                </p>
               </div>
             </div>
           </div>
