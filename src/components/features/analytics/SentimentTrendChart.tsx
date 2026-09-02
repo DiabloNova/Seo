@@ -53,7 +53,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label, i
  * Premium glassmorphic Sentiment Trend chart.
  * Uses Recharts AreaChart with custom gradients, tooltips, and localization supports.
  */
-export const SentimentTrendChart: React.FC<SentimentTrendChartProps> = ({
+const SentimentTrendChartView: React.FC<SentimentTrendChartProps> = ({
   data,
   loading = false,
 }) => {
@@ -147,3 +147,5 @@ export const SentimentTrendChart: React.FC<SentimentTrendChartProps> = ({
     </Card>
   );
 };
+
+export const SentimentTrendChart = React.memo(SentimentTrendChartView);
