@@ -11,7 +11,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/core/database/migrator.ts",
     "db:push": "tsx scripts/database/db-push-guard.ts && drizzle-kit push",
-    "test:all": "tsx scripts/test-all.ts"
+    "test:all": "tsx scripts/test-all.ts",
+    "perf:baseline": "node scripts/measure-route-budgets.mjs --write-baseline",
+    "perf:check": "node scripts/measure-route-budgets.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.24",
