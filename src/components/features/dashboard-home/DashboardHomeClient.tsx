@@ -17,6 +17,9 @@ import { RecentActivityPanel } from "./RecentActivityPanel";
 import { DashboardSummaryData } from "@/services/dashboard-home";
 import { triggerAuditAction } from "@/app/actions/audit";
 import { getDashboardStatsAction } from "@/app/actions/dashboard";
+import { DashboardPanelError } from "./DashboardPanelState";
+
+type PanelKey = "kpis" | "trends" | "issues" | "actions" | "audits" | "activity";
 
 interface DashboardHomeClientProps {
   initialData: DashboardSummaryData;
@@ -50,6 +53,8 @@ export default function DashboardHomeClient({
     competitivePosition: "N/A";
   } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [panelErrors, setPanelErrors] = useState<Partial<Record<PanelKey, boolean>>>({});
+  const [loadingPanels, setLoadingPanels] = useState<Partial<Record<PanelKey, boolean>>>({});
   const [isNewAuditOpen, setIsNewAuditOpen] = useState(false);
   const [newUrl, setNewUrl] = useState("");
   const [newUrlError, setNewUrlError] = useState("");
@@ -59,7 +64,9 @@ export default function DashboardHomeClient({
     try {
       const stats = await getDashboardStatsAction();
       setRealStats(stats);
+      setPanelErrors((current) => ({ ...current, kpis: false }));
     } catch (err) {
+      setPanelErrors((current) => ({ ...current, kpis: true }));
       console.error("Failed to fetch real dashboard stats", err);
     }
   }, []);
@@ -69,9 +76,10 @@ export default function DashboardHomeClient({
   }, [fetchRealStats]);
 
   // Trigger manual refresh by calling the server API summary route or re-fetching via client
-  const handleRefresh = async () => {
+  const handleRefresh = async (panel?: PanelKey) => {
     try {
-      setIsRefreshing(true);
+      setIsRefreshing(!panel);
+      if (panel) setLoadingPanels((current) => ({ ...current, [panel]: true }));
       const workspaceId = user?.workspaceId || "ws-default";
 
       const response = await fetch(
@@ -89,13 +97,18 @@ export default function DashboardHomeClient({
       if (response.ok) {
         const refreshedData = await response.json();
         setData(refreshedData);
+        if (panel) setPanelErrors((current) => ({ ...current, [panel]: false }));
+      } else if (panel) {
+        throw new Error("Dashboard panel request failed");
       }
 
-      await fetchRealStats();
+      if (!panel || panel === "kpis") await fetchRealStats();
     } catch (err) {
+      if (panel) setPanelErrors((current) => ({ ...current, [panel]: true }));
       console.error("Failed to refresh dashboard stats", err);
     } finally {
       setIsRefreshing(false);
+      if (panel) setLoadingPanels((current) => ({ ...current, [panel]: false }));
     }
   };
 
@@ -200,7 +213,7 @@ export default function DashboardHomeClient({
         <h2 className="text-xs font-black uppercase text-[var(--text-muted)] tracking-wider">
           {isRtl ? "شاخص‌های کلیدی عملکرد اجرایی" : "Executive KPI Layer"}
         </h2>
-        <DashboardKpiGrid
+        {panelErrors.kpis ? <DashboardPanelError onRetry={() => handleRefresh("kpis")} isRtl={isRtl} /> : <DashboardKpiGrid
           seoHealth={realStats?.seoHealth ?? data.seoHealth}
           aiVisibility={realStats?.aiVisibility ?? data.aiVisibility}
           brandAuthority={realStats?.brandAuthority ?? data.brandAuthority}
@@ -208,8 +221,8 @@ export default function DashboardHomeClient({
           technicalHealth={realStats?.technicalHealth ?? data.technicalHealth}
           contentHealth={realStats?.contentHealth ?? data.contentHealth}
           competitivePosition={realStats?.competitivePosition ?? data.competitivePosition}
-          loading={isRefreshing || !realStats}
-        />
+          loading={loadingPanels.kpis || (!realStats && !panelErrors.kpis)}
+        />}
       </div>
 
       {/* 3. Intelligence Layer (Visibility Trends) */}
@@ -218,10 +231,10 @@ export default function DashboardHomeClient({
           <h2 className="text-xs font-black uppercase text-[var(--text-muted)] tracking-wider">
             {isRtl ? "لایه هوشمندی و روند تغییرات" : "Intelligence Layer"}
           </h2>
-          <VisibilityTrendChart
-            data={data.visibilityTrends}
-            loading={isRefreshing}
-          />
+          {panelErrors.trends ? <DashboardPanelError onRetry={() => handleRefresh("trends")} isRtl={isRtl} /> : <VisibilityTrendChart
+            data={Array.isArray(data.visibilityTrends) ? data.visibilityTrends : []}
+            loading={loadingPanels.trends || isRefreshing}
+          />}
         </div>
       </div>
 
@@ -233,10 +246,10 @@ export default function DashboardHomeClient({
               ? "مشکلات بحرانی و با اولویت بالا"
               : "Action Layer — Critical Issues"}
           </h2>
-          <CriticalIssuesPanel
-            issues={data.criticalIssues}
-            loading={isRefreshing}
-          />
+          {panelErrors.issues ? <DashboardPanelError onRetry={() => handleRefresh("issues")} isRtl={isRtl} /> : <CriticalIssuesPanel
+            issues={Array.isArray(data.criticalIssues) ? data.criticalIssues : []}
+            loading={loadingPanels.issues || isRefreshing}
+          />}
         </div>
 
         <div className="space-y-3">
@@ -245,10 +258,10 @@ export default function DashboardHomeClient({
               ? "اقدامات و اولویت‌های بهبود استراتژیک"
               : "Action Layer — Recommended Actions"}
           </h2>
-          <RecommendedActionsPanel
-            actions={data.recommendedActions}
-            loading={isRefreshing}
-          />
+          {panelErrors.actions ? <DashboardPanelError onRetry={() => handleRefresh("actions")} isRtl={isRtl} /> : <RecommendedActionsPanel
+            actions={Array.isArray(data.recommendedActions) ? data.recommendedActions : []}
+            loading={loadingPanels.actions || isRefreshing}
+          />}
         </div>
       </div>
 
@@ -260,10 +273,10 @@ export default function DashboardHomeClient({
               ? "آخرین پایش‌های ثبت شده دامنه‌ها"
               : "Activity Layer — Recent Audits"}
           </h2>
-          <RecentAuditsPanel
-            audits={data.recentAudits}
-            loading={isRefreshing}
-          />
+          {panelErrors.audits ? <DashboardPanelError onRetry={() => handleRefresh("audits")} isRtl={isRtl} /> : <RecentAuditsPanel
+            audits={Array.isArray(data.recentAudits) ? data.recentAudits : []}
+            loading={loadingPanels.audits || isRefreshing}
+          />}
         </div>
 
         <div className="space-y-3">
@@ -272,10 +285,10 @@ export default function DashboardHomeClient({
               ? "جریان بلادرنگ فعالیت‌های فضای کاربری"
               : "Activity Layer — Recent Activities"}
           </h2>
-          <RecentActivityPanel
-            activities={data.recentActivity}
-            loading={isRefreshing}
-          />
+          {panelErrors.activity ? <DashboardPanelError onRetry={() => handleRefresh("activity")} isRtl={isRtl} /> : <RecentActivityPanel
+            activities={Array.isArray(data.recentActivity) ? data.recentActivity : []}
+            loading={loadingPanels.activity || isRefreshing}
+          />}
         </div>
       </div>
 
