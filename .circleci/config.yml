@@ -1,0 +1,43 @@
+version: 2.1
+
+# CI gate for seorchable. Previously this pipeline installed with `npm` (the repo's
+# authoritative package manager is `pnpm`; `package-lock.json` is stale and must not be
+# used) and ran no lint, type-check, or test step at all before "deploying" -- a broken
+# build could reach `main` undetected. This pipeline installs with pnpm and fails the
+# build on lint, type-check, or test failure.
+
+orbs:
+  node: circleci/node@5
+
+jobs:
+  build-and-verify:
+    docker:
+      - image: cimg/node:22.11
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: pnpm
+          pkg-manager-install-command: "corepack enable && corepack prepare pnpm@latest --activate"
+      - run:
+          name: Lint (ESLint)
+          command: pnpm lint
+      - run:
+          name: Type-check (tsc --noEmit)
+          command: pnpm exec tsc --noEmit
+      - run:
+          name: Acquisition feature tests
+          command: pnpm test:acquisition
+      - run:
+          name: Production build
+          command: pnpm build
+      - run:
+          name: Collect build artifacts
+          command: mkdir -p /tmp/artifacts && cp -R .next /tmp/artifacts/next-build 2>/dev/null || true
+      - store_artifacts:
+          path: /tmp/artifacts
+          destination: build-output
+
+workflows:
+  ci:
+    jobs:
+      - build-and-verify
