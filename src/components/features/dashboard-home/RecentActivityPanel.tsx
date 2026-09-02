@@ -70,7 +70,7 @@ export const RecentActivityPanel: React.FC<RecentActivityPanelProps> = ({
           </div>
         ) : (
           <div className="space-y-4">
-            {activities.map((item) => (
+            {(Array.isArray(activities) ? activities : []).map((item) => (
               <div
                 key={item.id}
                 className="flex items-start gap-3 text-start"
