@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "@/components/GlassCard";
 import { Button } from "@/components/Button";
@@ -133,24 +133,25 @@ export const CompetitiveAnalysisPanel: React.FC = () => {
   };
 
   // Convert chart data dynamically for RadarChart
-  const getRadarData = () => {
+  const radarData = useMemo(() => {
     if (!data) return [];
     const fields = [
       { key: "content", label: isRtl ? "محتوا" : "Content" },
       { key: "technical", label: isRtl ? "فنی" : "Technical" },
       { key: "seo", label: isRtl ? "سئو" : "SEO" },
       { key: "brand", label: isRtl ? "برند" : "Brand" },
-    ];
+    ] as const;
 
-    return fields.map((f) => {
-      const item: any = { subject: f.label };
-      item[isRtl ? "شما" : "User"] = data.competitorComparison[0]?.headToHead[f.key as "content" | "technical" | "seo" | "brand"].user || 80;
+    return fields.map((field) => {
+      const item: Record<string, string | number> = { subject: field.label };
+      item[isRtl ? "شما" : "User"] =
+        data.competitorComparison[0]?.headToHead[field.key].user || 80;
       data.competitorComparison.forEach((comp) => {
-        item[comp.competitorName] = comp.headToHead[f.key as "content" | "technical" | "seo" | "brand"].competitor;
+        item[comp.competitorName] = comp.headToHead[field.key].competitor;
       });
       return item;
     });
-  };
+  }, [data, isRtl]);
 
   const getMarketPositionLabel = (pos: CompetitiveAnalysisResponse["marketPosition"]) => {
     const mapping = {
@@ -410,7 +411,7 @@ export const CompetitiveAnalysisPanel: React.FC = () => {
               {/* Chart container */}
               <div className="w-full h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="75%" data={getRadarData()}>
+                  <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
                     <PolarGrid stroke="var(--border)" />
                     <PolarAngleAxis dataKey="subject" tick={{ fill: "var(--text-muted)", fontSize: 10 }} />
                     <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: "var(--text-secondary)", fontSize: 8 }} />
