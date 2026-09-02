@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   ResponsiveContainer,
   RadarChart,
@@ -33,19 +33,23 @@ export const RadarChartPrimitive: React.FC<RadarProps> = ({ dataset, height = 26
   const reducedMotion = useReducedMotion();
 
   // Recharts Radar requires data item structured as { subject, series1, series2 }
-  const formattedData = dataset.dimensions.map((dim) => {
-    const item: Record<string, unknown> = {
-      subject: isRtl ? dim.labelFa : dim.labelEn,
-    };
-    dataset.data.forEach((d) => {
-      if (d.dimensionKey === dim.key) {
-        dataset.series.forEach((s) => {
-          item[s.key] = d[s.key];
+  const formattedData = useMemo(
+    () =>
+      dataset.dimensions.map((dim) => {
+        const item: Record<string, unknown> = {
+          subject: isRtl ? dim.labelFa : dim.labelEn,
+        };
+        dataset.data.forEach((d) => {
+          if (d.dimensionKey === dim.key) {
+            dataset.series.forEach((s) => {
+              item[s.key] = d[s.key];
+            });
+          }
         });
-      }
-    });
-    return item;
-  });
+        return item;
+      }),
+    [dataset, isRtl],
+  );
 
   return (
     <div className="w-full flex items-center justify-center" style={{ height }}>
