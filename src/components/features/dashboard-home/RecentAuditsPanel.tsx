@@ -94,7 +94,7 @@ export const RecentAuditsPanel: React.FC<RecentAuditsPanelProps> = ({
           </div>
         ) : (
           <div className="space-y-3.5">
-            {audits.map((item) => (
+            {(Array.isArray(audits) ? audits : []).map((item) => (
               <div
                 key={item.id}
                 onClick={() => navigateToAudit(item)}
