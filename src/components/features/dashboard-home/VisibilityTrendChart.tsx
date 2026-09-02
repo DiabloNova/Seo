@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useId, useCallback, useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/Card";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
 import { useTheme } from "@/components/ThemeProvider";
@@ -70,6 +70,70 @@ export const VisibilityTrendChart: React.FC<VisibilityTrendChartProps> = ({
 
   const isRtl = language === "fa";
 
+  // Series labels are shared between the visual legend/tooltip and the
+  // screen-reader announcement below, so they only need to be defined once.
+  const seoSeriesName = isRtl ? "سلامت سئو فنی" : "Technical SEO Health";
+  const aiSeriesName = isRtl ? "سهم دیده‌شدن هوش مصنوعی" : "AI Visibility Index";
+
+  // --- Accessible keyboard navigation state -------------------------------
+  // Recharts' own built-in keyboard layer only supports ArrowLeft/ArrowRight
+  // and does not support Home/End, so we manage a single deterministic
+  // "active point" index ourselves and drive a visually-hidden live region
+  // from it. This does not touch the existing mouse-driven Tooltip/Legend,
+  // so hover behavior and the visual output are unchanged.
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  const descriptionId = useId();
+  const instructionsId = useId();
+
+  // Keep the active index in range if the dataset changes size/shape.
+  const safeActiveIndex = useMemo(() => {
+    if (activeIndex === null || data.length === 0) return null;
+    return Math.min(Math.max(activeIndex, 0), data.length - 1);
+  }, [activeIndex, data.length]);
+
+  const activePoint = safeActiveIndex !== null ? data[safeActiveIndex] : null;
+
+  const announcement = useMemo(() => {
+    if (!activePoint) return "";
+    return isRtl
+      ? `${activePoint.date}. ${seoSeriesName}: ${activePoint.seo} درصد. ${aiSeriesName}: ${activePoint.ai} درصد.`
+      : `${activePoint.date}. ${seoSeriesName}: ${activePoint.seo} percent. ${aiSeriesName}: ${activePoint.ai} percent.`;
+  }, [activePoint, isRtl, seoSeriesName, aiSeriesName]);
+
+  const handleChartFocus = useCallback(() => {
+    setActiveIndex((prev) => (prev === null ? 0 : prev));
+  }, []);
+
+  const handleChartKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (data.length === 0) return;
+
+      switch (event.key) {
+        case "ArrowRight":
+          event.preventDefault();
+          setActiveIndex((prev) => Math.min((prev ?? 0) + 1, data.length - 1));
+          break;
+        case "ArrowLeft":
+          event.preventDefault();
+          setActiveIndex((prev) => Math.max((prev ?? 0) - 1, 0));
+          break;
+        case "Home":
+          event.preventDefault();
+          setActiveIndex(0);
+          break;
+        case "End":
+          event.preventDefault();
+          setActiveIndex(data.length - 1);
+          break;
+        default:
+          // Let every other key (including Tab) fall through to native behavior.
+          break;
+      }
+    },
+    [data.length]
+  );
+
   if (loading || !mounted) {
     return (
       <Card className="min-h-[350px] flex flex-col justify-between border border-[var(--border)]">
@@ -120,18 +184,42 @@ export const VisibilityTrendChart: React.FC<VisibilityTrendChartProps> = ({
           <TrendingUp size={18} className="text-[var(--sky-blue-500)]" />
           <span>{isRtl ? "روند تغییرات حضور معنایی و سئو" : "Search & AI Visibility Trends"}</span>
         </CardTitle>
-        <CardDescription className="text-xs text-[var(--text-secondary)]">
+        <CardDescription id={descriptionId} className="text-xs text-[var(--text-secondary)]">
           {isRtl
             ? "مقایسه تاریخی رتبه بهینه‌سازی فنی موتورهای جستجو با سهم توصیه‌های هوش مصنوعی (AEO)"
             : "Chronological benchmark comparing technical SEO health against multi-model conversational prominence."}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 mt-2">
-        <div className="h-[260px] w-full">
+        {/* Visually hidden keyboard instructions, referenced alongside the
+            existing chart description via aria-describedby. */}
+        <p id={instructionsId} className="sr-only">
+          {isRtl
+            ? "نمودار تعاملی. برای پیمایش بین نقاط داده از کلیدهای جهت‌دار راست و چپ استفاده کنید، برای رفتن به اولین نقطه کلید Home و برای آخرین نقطه کلید End را فشار دهید."
+            : "Interactive chart. Use the right and left arrow keys to move between data points, Home to jump to the first point, and End to jump to the last point."}
+        </p>
+        <div
+          className="h-[260px] w-full outline-none rounded-xl focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-[var(--focus-ring)] focus-visible:outline-offset-[3px]"
+          tabIndex={0}
+          role="group"
+          aria-label={
+            isRtl
+              ? "روند دیده‌شدن سئو و هوش مصنوعی، نمودار تعاملی"
+              : "Search and AI visibility trend, interactive chart"
+          }
+          aria-describedby={`${descriptionId} ${instructionsId}`}
+          onFocus={handleChartFocus}
+          onKeyDown={handleChartKeyDown}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
               margin={{ top: 10, right: isRtl ? 10 : 20, left: isRtl ? 20 : 10, bottom: 0 }}
+              // The custom keyboard layer above (with Home/End support) replaces
+              // Recharts' built-in accessibilityLayer, which only handles
+              // ArrowLeft/ArrowRight and would otherwise add a second,
+              // competing tab stop inside the same chart.
+              accessibilityLayer={false}
             >
               <defs>
                 <linearGradient id="colorSeo" x1="0" y1="0" x2="0" y2="1">
@@ -176,7 +264,7 @@ export const VisibilityTrendChart: React.FC<VisibilityTrendChartProps> = ({
               <Area
                 type="monotone"
                 dataKey="seo"
-                name={isRtl ? "سلامت سئو فنی" : "Technical SEO Health"}
+                name={seoSeriesName}
                 stroke="#1F76F9"
                 strokeWidth={2.5}
                 fillOpacity={1}
@@ -185,7 +273,7 @@ export const VisibilityTrendChart: React.FC<VisibilityTrendChartProps> = ({
               <Area
                 type="monotone"
                 dataKey="ai"
-                name={isRtl ? "سهم دیده‌شدن هوش مصنوعی" : "AI Visibility Index"}
+                name={aiSeriesName}
                 stroke="#F59E0B"
                 strokeWidth={2.5}
                 fillOpacity={1}
@@ -193,6 +281,12 @@ export const VisibilityTrendChart: React.FC<VisibilityTrendChartProps> = ({
               />
             </AreaChart>
           </ResponsiveContainer>
+        </div>
+        {/* Screen-reader-only live region announcing the keyboard-selected
+            data point. Kept permanently mounted so content updates (not
+            remounts) trigger the announcement, avoiding duplicate reads. */}
+        <div aria-live="polite" role="status" className="sr-only">
+          {announcement}
         </div>
       </CardContent>
     </Card>
