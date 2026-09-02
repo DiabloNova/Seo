@@ -78,7 +78,7 @@ export const CriticalIssuesPanel: React.FC<CriticalIssuesPanelProps> = ({
           </div>
         ) : (
           <div className="space-y-3.5">
-            {issues.map((item) => (
+            {(Array.isArray(issues) ? issues : []).map((item) => (
               <div
                 key={item.id}
                 onClick={() => navigateTo(item.resolvedByRoute)}
