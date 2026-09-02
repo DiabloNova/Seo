@@ -2,7 +2,7 @@
 
 import React, { useState, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
@@ -15,6 +15,7 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
   const locale = resolvedParams.locale;
   const isFa = locale === "fa";
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { register } = useAuth();
 
   const [name, setName] = useState("");
@@ -111,7 +112,11 @@ export default function RegisterPage({ params }: { params: Promise<{ locale: str
       setIsSuccess(true);
       // Let the user proceed to verify email or directly to dashboard
       setTimeout(() => {
-        router.push(`/${locale}/verify-email?email=${encodeURIComponent(email)}`);
+        const plan = searchParams?.get("plan");
+        const next = searchParams?.get("next");
+        const continuation = next && next.startsWith(`/${locale}/`) ? `&next=${encodeURIComponent(next)}` : "";
+        const planParam = plan && ["free", "professional", "business", "enterprise"].includes(plan) ? `&plan=${encodeURIComponent(plan)}` : "";
+        router.push(`/${locale}/verify-email?email=${encodeURIComponent(email)}${planParam}${continuation}`);
       }, 1500);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
