@@ -78,7 +78,7 @@ export const RecommendedActionsPanel: React.FC<RecommendedActionsPanelProps> = (
           </div>
         ) : (
           <div className="space-y-3.5">
-            {actions.map((item) => (
+            {(Array.isArray(actions) ? actions : []).map((item) => (
               <div
                 key={item.id}
                 onClick={() => navigateTo(item.toolRoute)}
