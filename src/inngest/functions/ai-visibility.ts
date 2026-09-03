@@ -23,7 +23,7 @@ export const evaluatePrompts = inngest.createFunction(
       // Step 1: Fetch active prompts for the tenant
       const activePrompts = await step.run("fetch-active-prompts", async () => {
         return await TenantContextManager.runWithTenantContext(organizationId, userId, null, async () => {
-          const db = drizzle(TenantContextManager.getDbClient());
+          const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
           return await db.select().from(prompts).where(eq(prompts.isActive, true));
         });
       });
@@ -35,7 +35,7 @@ export const evaluatePrompts = inngest.createFunction(
       // Step 2: Fetch an active AI Engine for evaluation
       const engine = await step.run("fetch-active-engine", async () => {
         return await TenantContextManager.runWithTenantContext(organizationId, userId, null, async () => {
-          const db = drizzle(TenantContextManager.getDbClient());
+          const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
           const engines = await db.select().from(aiEngines).where(eq(aiEngines.isActive, true)).limit(1);
           return engines[0] || null;
         });
@@ -68,7 +68,7 @@ export const evaluatePrompts = inngest.createFunction(
       // Step 4: Save Visibility Results
       await step.run("save-visibility-results", async () => {
         await TenantContextManager.runWithTenantContext(organizationId, userId, null, async () => {
-          const db = drizzle(TenantContextManager.getDbClient());
+          const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
           const recordsToInsert = evaluations.map((evalData) => ({
             organizationId,
             brandId: evalData.brandId,
