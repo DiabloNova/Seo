@@ -42,7 +42,7 @@ export const automatedRecommendationsDiagnosis = inngest.createFunction(
       // Import the proper database instance from the core connection manager rather than relying on global.pgClient.
       const { TenantContextManager } = require("../../core/database/tenant-context");
       const { drizzle } = require("drizzle-orm/node-postgres");
-      const db = drizzle(TenantContextManager.getDbClient());
+      const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
       const res = await db.execute('SELECT id FROM organizations');
 
       for (const row of res.rows) {
