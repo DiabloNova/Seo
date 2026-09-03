@@ -14,7 +14,7 @@ export class SubscriptionService {
     const tenantId = TenantContextManager.getRequiredTenantId();
     const client = TenantContextManager.getDbClient();
     if (!client) throw new Error("Database client not available in TenantContext");
-    const db = drizzle(client);
+    const db = drizzle(client as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
 
     const subs = await db
       .select()
@@ -68,7 +68,7 @@ export class SubscriptionService {
     const tenantId = TenantContextManager.getRequiredTenantId();
     const client = TenantContextManager.getDbClient();
     if (!client) throw new Error("Database client not available in TenantContext");
-    const db = drizzle(client);
+    const db = drizzle(client as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
 
     const quotas = await db
       .select()
@@ -104,7 +104,7 @@ export class SubscriptionService {
     const tenantId = TenantContextManager.getRequiredTenantId();
     const client = TenantContextManager.getDbClient();
     if (!client) throw new Error("Database client not available in TenantContext");
-    const db = drizzle(client);
+    const db = drizzle(client as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
 
     // Atomically decrement balance, returning the new balance to check if it dropped below zero
     const result = await db
@@ -150,7 +150,7 @@ export class SubscriptionService {
     const tenantId = TenantContextManager.getRequiredTenantId();
     const client = TenantContextManager.getDbClient();
     if (!client) throw new Error("Database client not available in TenantContext");
-    const db = drizzle(client);
+    const db = drizzle(client as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
 
     const result = await db
       .update(tenantQuotas)
