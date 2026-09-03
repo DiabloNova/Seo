@@ -22,7 +22,7 @@ export const runAudit = inngest.createFunction(
         await TenantContextManager.runWithTenantContext(workspaceId, userId, null, async () => {
           // @ts-ignore
           const { drizzle } = require("drizzle-orm/node-postgres");
-          const db = drizzle(TenantContextManager.getDbClient());
+          const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
           await db
             .update(audits)
             .set({
@@ -45,7 +45,7 @@ export const runAudit = inngest.createFunction(
         await TenantContextManager.runWithTenantContext(workspaceId, userId, null, async () => {
           // @ts-ignore
           const { drizzle } = require("drizzle-orm/node-postgres");
-          const db = drizzle(TenantContextManager.getDbClient());
+          const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
           await db
             .update(audits)
             .set({
@@ -64,7 +64,7 @@ export const runAudit = inngest.createFunction(
       await TenantContextManager.runWithTenantContext(workspaceId, userId, null, async () => {
         // @ts-ignore
         const { drizzle } = require("drizzle-orm/node-postgres");
-        const db = drizzle(TenantContextManager.getDbClient());
+        const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
         await db
           .update(audits)
           .set({ status: "crawling", updatedAt: new Date() })
@@ -82,7 +82,7 @@ export const runAudit = inngest.createFunction(
         await TenantContextManager.runWithTenantContext(workspaceId, userId, null, async () => {
           // @ts-ignore
           const { drizzle } = require("drizzle-orm/node-postgres");
-          const db = drizzle(TenantContextManager.getDbClient());
+          const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
           await db
             .update(audits)
             .set({
@@ -101,7 +101,7 @@ export const runAudit = inngest.createFunction(
       await TenantContextManager.runWithTenantContext(workspaceId, userId, null, async () => {
         // @ts-ignore
         const { drizzle } = require("drizzle-orm/node-postgres");
-        const db = drizzle(TenantContextManager.getDbClient());
+        const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
         await db
           .update(audits)
           .set({
@@ -123,7 +123,7 @@ export const runAudit = inngest.createFunction(
         await TenantContextManager.runWithTenantContext(workspaceId, userId, null, async () => {
           // @ts-ignore
           const { drizzle } = require("drizzle-orm/node-postgres");
-          const db = drizzle(TenantContextManager.getDbClient());
+          const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
           await db
             .update(audits)
             .set({
@@ -142,7 +142,7 @@ export const runAudit = inngest.createFunction(
       await TenantContextManager.runWithTenantContext(workspaceId, userId, null, async () => {
         // @ts-ignore
         const { drizzle } = require("drizzle-orm/node-postgres");
-        const db = drizzle(TenantContextManager.getDbClient());
+        const db = drizzle(TenantContextManager.getDbClient() as unknown as import("drizzle-orm/node-postgres/driver").NodePgClient);
         await db
           .update(audits)
           .set({
