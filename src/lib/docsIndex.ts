@@ -10,12 +10,52 @@ export interface DocMeta {
 
 export const DOCS_INDEX: DocMeta[] = [
   {
+    slug: "HOMEPAGE-AUDIT",
+    titleEn: "Homepage Audit: UI and Content Risks",
+    titleFa: "Homepage Audit: UI and Content Risks",
+    category: "product",
+    categoryFa: "Product",
+    snippet: `# Homepage Audit: UI and Content Risks  This document contains a read-only forensic audit of the homepage's actual UI, content, links, claims, interactive controls, and responsive-layout risks based on repository evidence.  ## Phase 1 — Full Homepage Inventory  | Order | Section/Component Name | Source File | Purpose | Primary CTA | Secondary CTA | Content Classification | |---|---|---|---|---|---|---| | 1 | \`Header\` | \`src/components/marketing/Header.tsx\` | Global navigation and configuration (`
+  },
+  {
+    slug: "JULES-FRONTEND-ROADMAP",
+    titleEn: "SEOrchable Frontend Productization Roadmap",
+    titleFa: "SEOrchable Frontend Productization Roadmap",
+    category: "product",
+    categoryFa: "Product",
+    snippet: `# SEOrchable Frontend Productization Roadmap  ## Mission  Move the current frontend from a visually ambitious prototype to a dependable, accessible, fast product surface without changing product scope or inventing backend behaviour.  **Point A:** 49 locale page files, 46 client components, a 947-line client homepage, client-side auth bootstrap with a visible loading flash, locale-breaking protected redirects, artificial auth delays, alert-based OAuth placeholders, inconsistent loading/error/empt`
+  },
+  {
+    slug: "PHASE0-AI-PERSISTENCE-HARDENING",
+    titleEn: "Phase 0.2: AI services and in-memory persistence hardening",
+    titleFa: "Phase 0.2: AI services and in-memory persistence hardening",
+    category: "product",
+    categoryFa: "Product",
+    snippet: `# Phase 0.2: AI services and in-memory persistence hardening  ## Implemented  - Production \`PostgresClient\` now requires \`DATABASE_URL\`; the localhost fallback was removed. - Connection leasing no longer activates \`ALLOW_OFFLINE_DB_SIMULATION\` or \`MockPoolClient\`. - The unified AI repository's seeded \`InMemoryDatabase\` is now test-only. Its Map and array stores are disabled outside \`NODE_ENV=test\`, so a production request cannot read or write process-local persistence. - Legacy static Map stores`
+  },
+  {
     slug: "product",
     titleEn: "Seorchable Documentation Architecture",
     titleFa: "Seorchable Documentation Architecture",
     category: "product",
     categoryFa: "Product",
     snippet: `# Seorchable Documentation Architecture  Welcome to the Seorchable documentation. This documentation accurately reflects the implemented state of the repository, separating currently available capabilities from future plans.  ## Documentation Domains  To find what you are looking for, navigate to one of our six documentation domains:  ### 1. [Product Documentation](./product/README.md) Explains what Seorchable is and what capabilities it provides. Useful for understanding core features like AI V`
+  },
+  {
+    slug: "ROADMAP",
+    titleEn: "SEOrchable: Consolidated Jules Roadmap",
+    titleFa: "SEOrchable: Consolidated Jules Roadmap",
+    category: "product",
+    categoryFa: "Product",
+    snippet: `# SEOrchable: Consolidated Jules Roadmap  ## Purpose  This is the replacement for the earlier backend and frontend roadmaps. It removes prompts whose work has already been completed in the remediation passes and keeps only work that still needs Jules. Every prompt is intentionally single-purpose: one session, one focused diff, one PR.  ## Work already completed and therefore removed  The following items are done and must not be scheduled again:  - Password hashing and password-aware \`loginAction`
+  },
+  {
+    slug: "VISUAL-QA",
+    titleEn: "Visual QA coverage",
+    titleFa: "Visual QA coverage",
+    category: "product",
+    categoryFa: "Product",
+    snippet: `# Visual QA coverage  The Playwright suite covers the homepage, authentication entry point, pricing, and feature overview in both \`/fa\` and \`/en\`. Each route runs at 375x812, 430x932, 768x1024, and 1440x900, with full-page screenshots, a 1.5% pixel-difference tolerance, console/page-error checks, main-content visibility, and horizontal-overflow checks.  The homepage already had a product workspace preview and the rest of the landing page uses diagrams, data visualizations, and structured UI prev`
   },
   {
     slug: "api",
@@ -295,7 +335,7 @@ export const DOCS_INDEX: DocMeta[] = [
     titleFa: "Hierarchical RBAC Security Model",
     category: "security",
     categoryFa: "Security",
-    snippet: `# Hierarchical RBAC Security Model  This document specifies the administrative privilege levels and authorization structures enforced across the Admin console.  ## Roles and Ranks  We enforce a strict linear role hierarchy rank mapped numerically to compare permission levels:  | Role Name | Rank | Primary Accountability | |---|---|---| | **Super Admin** | 100 | Complete system override, administrative provisioning, billing bypass | | **Platform Admin** | 80 | Full tenant lifecycle management, fe`
+    snippet: `# Hierarchical RBAC Security Model  This document specifies the administrative privilege levels and authorization structures for the platform, and is explicit about what is **enforced today** versus **designed but not yet wired to any route**. The two previous versions of this document described only the aspirational 7-tier model below as if it were live; it is not, and no request in the application currently resolves against it. Treat this distinction as load-bearing before building anything ag`
   },
   {
     slug: "security",
@@ -311,7 +351,7 @@ export const DOCS_INDEX: DocMeta[] = [
     titleFa: "Security Architecture Model",
     category: "security",
     categoryFa: "Security",
-    snippet: `# Security Architecture Model  This document outlines the security, tenant authorization, Role-Based Access Control (RBAC), and compliance guidelines implemented for the AI Intelligence Engine.  ---  ## 1. Zero-Trust Tenant Isolation  The platform enforces zero-trust tenant isolation through multiple decoupled security shields:  1. **Repository Guard Rails**: Finders require explicit \`organizationId\` parameter filtering. 2. **Domain Layer Assertions**: Tenant contexts are verified inside domain `
+    snippet: `# Security Architecture Model  This document outlines the security, tenant authorization, Role-Based Access Control (RBAC), and compliance guidelines implemented for the platform. See [\`RBAC_MODEL.md\`](./RBAC_MODEL.md) for the full role breakdown and, importantly, which role model is actually enforced versus designed-but-unwired.  ---  ## 1. Zero-Trust Tenant Isolation  The platform enforces zero-trust tenant isolation through multiple decoupled security layers:  1. **PostgreSQL Row-Level Securi`
   },
   {
     slug: "services",
